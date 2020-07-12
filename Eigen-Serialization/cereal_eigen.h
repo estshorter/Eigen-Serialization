@@ -9,7 +9,7 @@ namespace cereal
 	template <class T>
 	struct DataWrapper
 	{
-		DataWrapper(T&& m) : mat(std::forward<T>(m)) {}
+		DataWrapper(T& m) : mat(m) {}
 		T& mat;
 		template <class Archive>
 		void save(Archive& ar) const
@@ -23,18 +23,11 @@ namespace cereal
 		void load(Archive& ar)
 		{
 			cereal::size_type n_rows;
-
 			ar(cereal::make_size_tag(n_rows));
 			for (int iter = 0, end = static_cast<int>(mat.size()); iter != end; ++iter)
 				ar(*(mat.data() + iter));
 		}
 	};
-
-	template<class T> inline
-	DataWrapper<T> make_data_wrapper(T&& t)
-	{
-		return { std::forward<T>(t) };
-	}
 
 	template <class Archive, class Derived, cereal::traits::DisableIf<cereal::traits::is_text_archive<Archive>::value> = cereal::traits::sfinae>
 	inline void save(Archive& ar, Eigen::PlainObjectBase<Derived> const& m) {
@@ -59,7 +52,7 @@ namespace cereal
 		using ArrT = Eigen::PlainObjectBase<Derived>;
 		ar(cereal::make_nvp("rows", m.rows()));
 		ar(cereal::make_nvp("cols", m.cols()));
-		ar(cereal::make_nvp("data", make_data_wrapper(m)));
+		ar(cereal::make_nvp("data", DataWrapper(m)));
 	}
 
 	template <class Archive, class Derived, cereal::traits::EnableIf<cereal::traits::is_text_archive<Archive>::value> = cereal::traits::sfinae>
@@ -69,6 +62,6 @@ namespace cereal
 		ar(rows);
 		ar(cols);
 		m.resize(rows, cols);
-		ar(make_data_wrapper(m));
+		ar(DataWrapper(m));
 	}
 }
