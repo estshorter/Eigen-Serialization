@@ -24,7 +24,6 @@ namespace cereal
 		{
 			cereal::size_type n_rows;
 
-			// Test to see if we need to resize the data
 			ar(cereal::make_size_tag(n_rows));
 			for (int iter = 0, end = static_cast<int>(mat.size()); iter != end; ++iter)
 				ar(*(mat.data() + iter));
